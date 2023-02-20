@@ -14,6 +14,9 @@ module.exports = {
     {
       files: '**/*.{ts,tsx}',
       extends: ['eason/typescript', 'plugin:prettier/recommended'],
+      rules: {
+        '@typescript-eslint/restrict-template-expressions': 'off',
+      },
     },
   ],
 };
