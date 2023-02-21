@@ -1,11 +1,11 @@
 import DefaultHead from '@/components/defaultHead';
-import Form from '@/components/form';
+import Shortner from '@/layouts/shortner';
 
 export default function Home() {
   return (
     <>
       <DefaultHead />
-      <Form />
+      <Shortner />
     </>
   );
 }

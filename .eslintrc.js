@@ -18,6 +18,7 @@ module.exports = {
         '@typescript-eslint/restrict-template-expressions': 'off',
         '@typescript-eslint/no-unsafe-call': 'warn',
         '@typescript-eslint/no-unsafe-assignment': 'warn',
+        'no-unused-vars': 'warn',
       },
     },
   ],

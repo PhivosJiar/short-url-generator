@@ -1,14 +1,17 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import React from 'react';
 
 import useInputValidate from '@/hooks/useInputValidate';
-import styles from '@/styles/Form.module.scss';
+import styles from '@/styles/Shortner.module.scss';
 import type { Field, RspShortUrl } from '@/type/api';
+
+interface FormProps {
+  handleShortListUpdate: (newShortUrl: string) => void;
+}
 
 const isNotEmpty = (value: string) => value.trim() !== '';
 
-function Form() {
-  const [shortUrlList, setShortUrl] = useState(['']);
+function Form({ handleShortListUpdate }: FormProps) {
   // title
   const {
     value: title,
@@ -64,7 +67,7 @@ function Form() {
       });
 
       // update shortUrlList and re-render
-      setShortUrl([...shortUrlList, shortUrl]);
+      handleShortListUpdate(shortUrl);
       // reset
       resetTitle();
       resetDescription();
@@ -169,11 +172,6 @@ function Form() {
           Submit
         </button>
       </form>
-      <div className={styles.urlList}>
-        {shortUrlList?.map((shortUrl) => {
-          return <div key={shortUrl}>{shortUrl}</div>;
-        })}
-      </div>
     </>
   );
 }
