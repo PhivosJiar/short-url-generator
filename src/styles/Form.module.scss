@@ -1,0 +1,56 @@
+.form {
+    width: 428px;
+    height: 240px;
+    box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.5);
+    position: relative;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-flow: column nowrap;
+    padding: 0 2rem;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.error {
+    border: 2px #ff0000 solid;
+}
+
+.error,
+.input {
+    width: 16rem;
+}
+
+.hint {
+    color: #ff0000;
+    position: absolute;
+    right: 0;
+    bottom: -1.2rem;
+}
+
+.subForm {
+    width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.25em;
+}
+
+.subContent {
+    position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.urlList {
+    height: 20vh;
+    overflow: auto;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 1rem;
+}

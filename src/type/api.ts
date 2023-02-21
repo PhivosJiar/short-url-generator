@@ -37,3 +37,8 @@ export class CustomError extends Error {
     if (message) this.message = message;
   }
 }
+
+// API short-url response
+export type RspShortUrl = {
+  shortUrl: string;
+};
