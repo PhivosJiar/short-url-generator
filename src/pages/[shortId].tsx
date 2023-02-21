@@ -22,7 +22,7 @@ export const getStaticProps: GetStaticProps<any> = async (context) => {
   const { shortId } = context.params as Params;
   // Get targetUrl
   const axiosResp = await axios
-    .get(`${process.env.HOST}/api/get/short-url-info/${shortId}`)
+    .get(`${process.env.NEXT_PUBLIC_HOST}/api/get/short-url-info/${shortId}`)
     .then((res) => res.data as Field);
 
   // Handle shortId not exist
