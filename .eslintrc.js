@@ -16,6 +16,8 @@ module.exports = {
       extends: ['eason/typescript', 'plugin:prettier/recommended'],
       rules: {
         '@typescript-eslint/restrict-template-expressions': 'off',
+        '@typescript-eslint/no-unsafe-call': 'warn',
+        '@typescript-eslint/no-unsafe-assignment': 'warn',
       },
     },
   ],
