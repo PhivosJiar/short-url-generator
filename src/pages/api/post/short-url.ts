@@ -34,7 +34,6 @@ export default async function handler(
         `Invalid input: missing key 'targetUrl'`
       );
     }
-    const { host } = req.headers;
 
     // Create short url
     const shortId = ShortId.generate();
@@ -44,7 +43,7 @@ export default async function handler(
         shortId,
       },
     });
-    body.data = { shortUrl: `https://${host}/${shortId}` };
+    body.data = { shortUrl: `${process.env.NEXT_PUBLIC_HOST}/${shortId}` };
   } catch (error) {
     const { message, httpStatusCode } = error as CustomError;
     body = { message };
