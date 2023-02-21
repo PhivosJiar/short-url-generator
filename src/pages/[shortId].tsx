@@ -65,7 +65,9 @@ export default function Home(props: {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className={styles.card}>
-        <span className={styles.url}>您將要前往：{targetUrl}</span>
+        <span className={styles.url}>
+          You are about to go to:<p>{targetUrl}</p>
+        </span>
 
         <button className={styles.btn} onClick={handleClick}>
           &gt;
