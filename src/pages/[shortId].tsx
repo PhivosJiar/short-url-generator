@@ -51,6 +51,7 @@ export const getStaticProps: GetStaticProps<any> = async (context) => {
       targetUrl,
       visits: newVisit,
     },
+    revalidate: 60,
   };
 };
 
