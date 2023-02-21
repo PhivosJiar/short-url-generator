@@ -32,24 +32,38 @@ export const getStaticProps: GetStaticProps<any> = async (context) => {
     };
   }
 
-  const { title, description, imageUrl, targetUrl } =
+  const { title, description, imageUrl, targetUrl, visits } =
     axiosResp.data as ReqUrlPreviewInfo;
 
+  const newVisit = (visits as number) + 1;
+  // updating visits from short url info
+  axios.patch(
+    `${process.env.NEXT_PUBLIC_HOST}/api/patch/short-url-info/${shortId}`,
+    { visits: newVisit }
+  );
+
   // Render pre-render page
-  return { props: { title, description, imageUrl, targetUrl } };
+  return {
+    props: {
+      title,
+      description,
+      imageUrl,
+      targetUrl,
+      visits: newVisit,
+    },
+  };
 };
 
-export default function Home(props: {
-  title: string;
-  description: string;
-  imageUrl: string;
-  targetUrl: string;
-}) {
-  const { title, description, imageUrl, targetUrl } = props;
-
+export default function Home({
+  title,
+  description,
+  imageUrl,
+  targetUrl,
+  visits,
+}: ReqUrlPreviewInfo) {
   // go to targetUrl
   const handleClick = () => {
-    location.replace(targetUrl);
+    location.replace(targetUrl as string);
   };
 
   return (
@@ -72,6 +86,8 @@ export default function Home(props: {
         <button className={styles.btn} onClick={handleClick}>
           &gt;
         </button>
+
+        <span className={styles.visits}>visits: {visits}</span>
       </div>
     </>
   );

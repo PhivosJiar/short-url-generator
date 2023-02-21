@@ -17,16 +17,20 @@ export type Field = {
 
 // Information Required to Create a Shortened URL
 export type ReqUrlPreviewInfo = {
-  targetUrl: string;
+  targetUrl?: string;
   title?: string;
   description?: string;
   imageUrl?: string;
+  visits?: number;
 };
 
 // Defining POST API /short-url Body.
 export interface CreateShortUrlReq extends NextApiRequest {
   body: ReqUrlPreviewInfo;
 }
+
+// Defining PATCH API /short-url-info Body.
+export type UpdateShortUrlReq = NextApiRequest;
 
 // Expanding Error Type
 export class CustomError extends Error {

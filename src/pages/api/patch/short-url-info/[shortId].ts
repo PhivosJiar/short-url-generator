@@ -1,17 +1,15 @@
 import { PrismaClient } from '@prisma/client';
-import type { NextApiResponse } from 'next';
-import * as ShortId from 'shortid';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-import type { CreateShortUrlReq, ResBody } from '@/type/api';
+import { HttpStatusEnum } from '@/enum/http';
+import type { Field, ResBody } from '@/type/api';
+import { CustomError, ReqUrlPreviewInfo, UpdateShortUrlReq } from '@/type/api';
 import { checkReqMethod } from '@/utils/api/middlewares';
-
-import { HttpStatusEnum } from './../../../enum/http';
-import { CustomError } from './../../../type/api';
 
 const prisma = new PrismaClient();
 
 export default async function handler(
-  req: CreateShortUrlReq,
+  req: UpdateShortUrlReq,
   res: NextApiResponse<ResBody>
 ) {
   // Initialize response information
@@ -19,33 +17,39 @@ export default async function handler(
   let status: number = HttpStatusEnum.OK;
   try {
     // Verify request method
-    if (!checkReqMethod('POST', req.method)) {
+    if (!checkReqMethod('PATCH', req.method)) {
       throw new CustomError(
         HttpStatusEnum.MethodNotAllowed,
         'Method Now Allowed'
       );
     }
-
     // Verify request data
-    const requestPreview = req.body;
-    if (!requestPreview?.targetUrl) {
+    const { shortId } = req.query;
+    if (!shortId) {
       throw new CustomError(
         HttpStatusEnum.BadReqest,
-        `Invalid input: missing key 'targetUrl'`
+        `Invalid input: missing key 'shortId'`
       );
     }
 
-    const { targetUrl } = requestPreview;
-    // Create short url
-    const shortId = ShortId.generate();
-    await prisma.shortUrl.create({
-      data: {
-        ...requestPreview,
-        targetUrl,
-        shortId,
+    const data = req.body as ReqUrlPreviewInfo;
+
+    // qurey short url info
+    const shortUrlInfo = await prisma.shortUrl.findFirst({
+      where: {
+        shortId: shortId as string,
       },
     });
-    body.data = { shortUrl: `${process.env.NEXT_PUBLIC_HOST}/${shortId}` };
+
+    // updating visits from short url info
+    const updateShortUrlInfo = await prisma.shortUrl.update({
+      where: {
+        id: shortUrlInfo?.id,
+      },
+      data,
+    });
+
+    body.data = updateShortUrlInfo as Field;
   } catch (error) {
     const { message, httpStatusCode } = error as CustomError;
     body = { message };

@@ -15,4 +15,5 @@ model ShortUrl {
   targetUrl   String   @db.VarChar(8182)
   shortId     String?  @db.VarChar(255)
   createdAt   DateTime @default(now()) @db.Timestamp(0)
+  visits      Int?     @default(0)
 }
