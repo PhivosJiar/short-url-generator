@@ -4,12 +4,16 @@ import React from 'react';
 import useInputValidate from '@/hooks/useInputValidate';
 import styles from '@/styles/Shortner.module.scss';
 import type { Field, RspShortUrl } from '@/type/api';
+import { checkUrlIsValid } from '@/utils/checkUrlIsValid';
 
 interface FormProps {
   handleShortListUpdate: (newShortUrl: string) => void;
 }
 
-const isNotEmpty = (value: string) => value.trim() !== '';
+// verify url is valid
+const isValidUrl = (value: string) => {
+  return checkUrlIsValid(value);
+};
 
 function Form({ handleShortListUpdate }: FormProps) {
   // title
@@ -47,7 +51,7 @@ function Form({ handleShortListUpdate }: FormProps) {
     onChangeValue: onChangeTargetUrl,
     onBlurValue: onBlurTargetUrl,
     reset: resetTargetUrl,
-  } = useInputValidate(isNotEmpty);
+  } = useInputValidate(isValidUrl);
 
   // handleFormSubmit
   const onFormSubmit = async (e: { preventDefault: () => void }) => {
@@ -118,7 +122,7 @@ function Form({ handleShortListUpdate }: FormProps) {
             </div>
 
             {targetUrlError && (
-              <p className={styles.hint}>Please enter a valid targetUrl.</p>
+              <p className={styles.hint}>Please enter a valid url.</p>
             )}
           </div>
         </div>
