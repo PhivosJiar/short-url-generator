@@ -4,6 +4,7 @@ import React from 'react';
 import useInputValidate from '@/hooks/useInputValidate';
 import styles from '@/styles/Shortner.module.scss';
 import type { Field, RspShortUrl } from '@/type/api';
+import { checkImgUrlIsValid } from '@/utils/checkImgIsValid';
 import { checkUrlIsValid } from '@/utils/checkUrlIsValid';
 
 interface FormProps {
@@ -13,6 +14,12 @@ interface FormProps {
 // verify url is valid
 const isValidUrl = (value: string) => {
   return checkUrlIsValid(value);
+};
+
+// verify imgUrl is valid
+const isValidImg = (value: string) => {
+  // Since it is an optional item, a value must be present for it to be checked.
+  return !value.trim() || checkImgUrlIsValid(value);
 };
 
 function Form({ handleShortListUpdate }: FormProps) {
@@ -38,10 +45,11 @@ function Form({ handleShortListUpdate }: FormProps) {
   const {
     value: imageUrl,
     isValid: imageUrlIsValid,
+    hasError: imgUrlError,
     onChangeValue: onChangeImageUrl,
     onBlurValue: onBlurImageUrl,
     reset: resetImageUrl,
-  } = useInputValidate();
+  } = useInputValidate(isValidImg);
 
   // targetUrl
   const {
@@ -163,6 +171,9 @@ function Form({ handleShortListUpdate }: FormProps) {
                 className={styles.input}
               />
             </div>
+            {imgUrlError && (
+              <p className={styles.hint}>Please enter a valid image url.</p>
+            )}
           </div>
         </div>
         <button
