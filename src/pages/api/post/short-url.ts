@@ -37,15 +37,15 @@ export default async function handler(
 
     const { targetUrl } = requestPreview;
     // Create short url
-    const shortId = ShortId.generate();
+    const id = ShortId.generate();
     await prisma.shortUrl.create({
       data: {
         ...requestPreview,
         targetUrl,
-        shortId,
+        id,
       },
     });
-    body.data = { shortUrl: `${process.env.NEXT_PUBLIC_HOST}/${shortId}` };
+    body.data = { shortUrl: `${process.env.NEXT_PUBLIC_HOST}/${id}` };
   } catch (error) {
     const { message, httpStatusCode } = error as CustomError;
     body = { message };

@@ -17,6 +17,7 @@ export type Field = {
 
 // Information Required to Create a Shortened URL
 export type ReqUrlPreviewInfo = {
+  id: string;
   targetUrl?: string;
   title?: string;
   description?: string;

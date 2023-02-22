@@ -7,7 +7,7 @@ import styles from '@/styles/Home.module.scss';
 import { Field, ReqUrlPreviewInfo } from '@/type/api';
 
 interface Params extends ParsedUrlQuery {
-  shortId: string | string[];
+  id: string | string[];
 }
 
 export const getStaticPaths: GetStaticPaths = () => {
@@ -19,13 +19,13 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 // Handle pre-rendering
 export const getStaticProps: GetStaticProps<any> = async (context) => {
-  const { shortId } = context.params as Params;
+  const { id } = context.params as Params;
   // Get targetUrl
   const axiosResp = await axios
-    .get(`${process.env.NEXT_PUBLIC_HOST}/api/get/short-url-info/${shortId}`)
+    .get(`${process.env.NEXT_PUBLIC_HOST}/api/get/short-url-info/${id}`)
     .then((res) => res.data as Field);
 
-  // Handle shortId not exist
+  // Handle id not exist
   if (!axiosResp.data) {
     return {
       notFound: true,
@@ -38,7 +38,7 @@ export const getStaticProps: GetStaticProps<any> = async (context) => {
   const newVisit = (visits as number) + 1;
   // updating visits from short url info
   axios.patch(
-    `${process.env.NEXT_PUBLIC_HOST}/api/patch/short-url-info/${shortId}`,
+    `${process.env.NEXT_PUBLIC_HOST}/api/patch/short-url-info/${id}`,
     { visits: newVisit }
   );
 
