@@ -5,10 +5,13 @@ import { ParsedUrlQuery } from 'querystring';
 
 import styles from '@/styles/Home.module.scss';
 import { Field, ReqUrlPreviewInfo } from '@/type/api';
+import { Cache } from '@/utils/cache';
 
 interface Params extends ParsedUrlQuery {
-  id: string | string[];
+  id: string;
 }
+
+const cache = new Cache(4);
 
 export const getStaticPaths: GetStaticPaths = () => {
   return {
@@ -17,30 +20,48 @@ export const getStaticPaths: GetStaticPaths = () => {
   };
 };
 
-// Handle pre-rendering
-export const getStaticProps: GetStaticProps<any> = async (context) => {
-  const { id } = context.params as Params;
+// Get shortUrlInfo from db
+const getShortUrlInfo = async (id: string) => {
   // Get targetUrl
   const axiosResp = await axios
     .get(`${process.env.NEXT_PUBLIC_HOST}/api/get/short-url-info/${id}`)
     .then((res) => res.data as Field);
 
+  const shortUrlInfo = axiosResp.data as ReqUrlPreviewInfo;
+  // Put the data into the cache.
+  cache.put(shortUrlInfo.id, shortUrlInfo);
+  return shortUrlInfo;
+};
+
+// Updating visits from short url info
+const updateVisits = (id: string, visits: number) => {
+  axios.patch(
+    `${process.env.NEXT_PUBLIC_HOST}/api/patch/short-url-info/${id}`,
+    { visits }
+  );
+};
+
+// Handle pre-rendering
+export const getStaticProps: GetStaticProps<any> = async (context) => {
+  const { id } = context.params as Params;
+
+  const cacheValue = cache.get(id) as ReqUrlPreviewInfo;
+  // If the target data is not in the cache, query the database.
+  const shortUrlInfo = cacheValue || (await getShortUrlInfo(id));
+
   // Handle id not exist
-  if (!axiosResp.data) {
+  if (!shortUrlInfo) {
     return {
       notFound: true,
     };
   }
 
-  const { title, description, imageUrl, targetUrl, visits } =
-    axiosResp.data as ReqUrlPreviewInfo;
+  const { title, description, imageUrl, targetUrl, visits } = shortUrlInfo;
 
-  const newVisit = (visits as number) + 1;
-  // updating visits from short url info
-  axios.patch(
-    `${process.env.NEXT_PUBLIC_HOST}/api/patch/short-url-info/${id}`,
-    { visits: newVisit }
-  );
+  const newVisit = (visits ?? 0) + 1;
+  shortUrlInfo.visits = newVisit;
+  // Updating visits
+  updateVisits(shortUrlInfo.id, newVisit);
 
   // Render pre-render page
   return {
@@ -51,7 +72,7 @@ export const getStaticProps: GetStaticProps<any> = async (context) => {
       targetUrl,
       visits: newVisit,
     },
-    revalidate: 60,
+    revalidate: 1,
   };
 };
 
