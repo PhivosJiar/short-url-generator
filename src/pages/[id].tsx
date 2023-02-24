@@ -29,7 +29,7 @@ const getShortUrlInfo = async (id: string) => {
 
   const shortUrlInfo = axiosResp.data as ReqUrlPreviewInfo;
   // Put the data into the cache.
-  cache.put(shortUrlInfo.id, shortUrlInfo);
+  if (shortUrlInfo) cache.put(shortUrlInfo.id, shortUrlInfo);
   return shortUrlInfo;
 };
 
