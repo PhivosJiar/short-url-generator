@@ -98,7 +98,7 @@ function Form({ handleShortListUpdate }: FormProps) {
   }) => {
     try {
       const axiosResp = await axios
-        .post(`/api/post/short-url`, props)
+        .post(`/api/short-url`, props)
         .then((res) => res.data as Field);
       const { shortUrl } = axiosResp.data as RspShortUrl;
       return shortUrl;

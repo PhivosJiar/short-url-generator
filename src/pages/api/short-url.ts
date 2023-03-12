@@ -5,8 +5,8 @@ import * as ShortId from 'shortid';
 import type { CreateShortUrlReq, ResBody } from '@/type/api';
 import { checkReqMethod } from '@/utils/api/middlewares';
 
-import { HttpStatusEnum } from './../../../enum/http';
-import { CustomError } from './../../../type/api';
+import { HttpStatusEnum } from '../../enum/http';
+import { CustomError } from '../../type/api';
 
 const prisma = new PrismaClient();
 

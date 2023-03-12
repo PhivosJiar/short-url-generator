@@ -22,10 +22,9 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 // Get shortUrlInfo from db
 const getShortUrlInfo = async (id: string) => {
+  const url = `${process.env.NEXT_PUBLIC_HOST}/api/short-url/${id}`;
   // Get targetUrl
-  const axiosResp = await axios
-    .get(`${process.env.NEXT_PUBLIC_HOST}/api/get/short-url-info/${id}`)
-    .then((res) => res.data as Field);
+  const axiosResp = await axios.get(url).then((res) => res.data as Field);
 
   const shortUrlInfo = axiosResp.data as ReqUrlPreviewInfo;
   // Put the data into the cache.
@@ -35,10 +34,10 @@ const getShortUrlInfo = async (id: string) => {
 
 // Updating visits from short url info
 const updateVisits = (id: string, visits: number) => {
-  axios.patch(
-    `${process.env.NEXT_PUBLIC_HOST}/api/patch/short-url-info/${id}`,
-    { visits }
-  );
+  const url = `${process.env.NEXT_PUBLIC_HOST}/api/short-url/${id}`;
+  axios.patch(url, {
+    visits,
+  });
 };
 
 // Handle pre-rendering
