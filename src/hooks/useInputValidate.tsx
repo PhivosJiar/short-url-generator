@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 
 // init input state
 const initialInput = {
@@ -22,11 +22,13 @@ const inputReducer = (
   }
 };
 
-const useInputValidate = (validateValue?: (arg0: any) => boolean) => {
+const useInputValidate = (
+  validateValue?: (arg0: any) => boolean | Promise<boolean>,
+  debounceTime = 500
+) => {
   const [input, dispatch] = useReducer(inputReducer, initialInput);
-
-  // If there is no verification function, it means that no verification is required, directly set valueIsValid to true
-  const valueIsValid = validateValue ? validateValue(input.value) : true;
+  const [isDebounced, setIsDebounced] = useState(false);
+  const [valueIsValid, setValueIsValid] = useState(true);
   const hasError = !valueIsValid && input.isTouched;
 
   // handle input onChange,update state value
@@ -49,6 +51,27 @@ const useInputValidate = (validateValue?: (arg0: any) => boolean) => {
       value: '',
     });
   };
+
+  // debounce validateValue
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsDebounced(true);
+    }, debounceTime);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [input.value, debounceTime]);
+
+  useEffect(() => {
+    const valid = async () => {
+      if (isDebounced && validateValue) {
+        setIsDebounced(false);
+        setValueIsValid(await validateValue(input.value));
+      }
+    };
+    valid();
+  }, [isDebounced, validateValue]);
 
   return {
     value: input.value,

@@ -25,8 +25,17 @@ export type ReqUrlPreviewInfo = {
   visits?: number;
 };
 
+// Information Required to Validation targetUrl
+export type reqUrlValidationInfo = {
+  targetUrl: string;
+};
 // Defining POST API /short-url Body.
 export interface CreateShortUrlReq extends NextApiRequest {
+  body: ReqUrlPreviewInfo;
+}
+
+// Defining POST API /url-validation Body.
+export interface urlValidationReq extends NextApiRequest {
   body: ReqUrlPreviewInfo;
 }
 

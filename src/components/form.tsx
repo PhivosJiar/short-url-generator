@@ -5,23 +5,34 @@ import useInputValidate from '@/hooks/useInputValidate';
 import styles from '@/styles/Shortner.module.scss';
 import type { Field, RspShortUrl } from '@/type/api';
 import { checkUrlIsValid } from '@/utils/checkIsValid';
+import { formatUrl } from '@/utils/formatUrl';
 
 interface FormProps {
   handleShortListUpdate: (newShortUrl: string) => void;
 }
 
-// verify url is valid
-const isValidUrl = (value: string) => {
-  return checkUrlIsValid(value, 'url');
-};
-
-// verify imgUrl is valid
-const isValidImg = (value: string) => {
-  // Since it is an optional item, a value must be present for it to be checked.
-  return !value.trim() || checkUrlIsValid(value, 'img');
-};
-
 function Form({ handleShortListUpdate }: FormProps) {
+  // verify url is valid
+  const isValidUrl = async (url: string): Promise<boolean> => {
+    if (!checkUrlIsValid(url, 'url')) return false;
+
+    try {
+      // Send a request to verify the URL's availability.
+      const apiurl = `${process.env.NEXT_PUBLIC_HOST}/api/url-validation`;
+      const targetUrl = formatUrl(url);
+      await axios.post(apiurl, { targetUrl });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  // verify imgUrl is valid
+  const isValidImg = (value: string): boolean => {
+    // Since it is an optional item, a value must be present for it to be checked.
+    return !value.trim() || checkUrlIsValid(value, 'img');
+  };
+
   // title
   const {
     value: title,
@@ -97,8 +108,9 @@ function Form({ handleShortListUpdate }: FormProps) {
     targetUrl: string | undefined | null;
   }) => {
     try {
+      const apiUrl = `${process.env.NEXT_PUBLIC_HOST}/api/short-url`;
       const axiosResp = await axios
-        .post(`/api/short-url`, props)
+        .post(apiUrl, props)
         .then((res) => res.data as Field);
       const { shortUrl } = axiosResp.data as RspShortUrl;
       return shortUrl;
