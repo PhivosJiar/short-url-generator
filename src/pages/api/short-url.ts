@@ -7,6 +7,7 @@ import { checkReqMethod } from '@/utils/api/middlewares';
 
 import { HttpStatusEnum } from '../../enum/http';
 import { CustomError } from '../../type/api';
+import { formatUrl } from './../../utils/formatUrl';
 
 const prisma = new PrismaClient();
 
@@ -36,12 +37,13 @@ export default async function handler(
     }
 
     const { targetUrl } = requestPreview;
+    const formatTargetUrl = formatUrl(targetUrl);
     // Create short url
     const id = ShortId.generate();
     await prisma.shortUrl.create({
       data: {
         ...requestPreview,
-        targetUrl,
+        targetUrl: formatTargetUrl,
         id,
       },
     });
