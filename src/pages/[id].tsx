@@ -2,6 +2,7 @@ import axios from 'axios';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import { ParsedUrlQuery } from 'querystring';
+import { useEffect, useState } from 'react';
 
 import styles from '@/styles/Home.module.scss';
 import { Field, ReqUrlPreviewInfo } from '@/type/api';
@@ -32,14 +33,6 @@ const getShortUrlInfo = async (id: string) => {
   return shortUrlInfo;
 };
 
-// Updating visits from short url info
-const updateVisits = (id: string, visits: number) => {
-  const url = `${process.env.NEXT_PUBLIC_HOST}/api/short-url/${id}`;
-  axios.patch(url, {
-    visits,
-  });
-};
-
 // Handle pre-rendering
 export const getStaticProps: GetStaticProps<any> = async (context) => {
   const { id } = context.params as Params;
@@ -55,37 +48,43 @@ export const getStaticProps: GetStaticProps<any> = async (context) => {
     };
   }
 
-  const { title, description, imageUrl, targetUrl, visits } = shortUrlInfo;
-
-  const newVisit = (visits ?? 0) + 1;
-  shortUrlInfo.visits = newVisit;
-  // Updating visits
-  updateVisits(shortUrlInfo.id, newVisit);
+  const { title, description, imageUrl, targetUrl } = shortUrlInfo;
 
   // Render pre-render page
   return {
     props: {
+      id,
       title,
       description,
       imageUrl,
       targetUrl,
-      visits: newVisit,
     },
     revalidate: 1,
   };
 };
 
 export default function Home({
+  id,
   title,
   description,
   imageUrl,
   targetUrl,
-  visits,
 }: ReqUrlPreviewInfo) {
+  const [visits, setVisits] = useState(0);
   // go to targetUrl
   const handleClick = () => {
     location.replace(targetUrl as string);
   };
+
+  useEffect(() => {
+    const updateVisits = async () => {
+      const url = `${process.env.NEXT_PUBLIC_HOST}/api/short-url/${id}/visits`;
+      const newData = await axios.put(url).then((res) => res.data as Field);
+      const newVisits = (newData.data as ReqUrlPreviewInfo).visits;
+      if (newVisits) setVisits(newVisits);
+    };
+    updateVisits();
+  }, [id]);
 
   return (
     <>
@@ -108,7 +107,7 @@ export default function Home({
           &gt;
         </button>
 
-        <span className={styles.visits}>visits: {visits}</span>
+        <span className={styles.visits}>visits: {visits || `fetching...`}</span>
       </div>
     </>
   );
