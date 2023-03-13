@@ -2,14 +2,41 @@ import { PrismaClient } from '@prisma/client';
 import type { NextApiResponse } from 'next';
 import * as ShortId from 'shortid';
 
-import type { CreateShortUrlReq, ResBody } from '@/type/api';
+import {
+  CreateShortUrlReq,
+  CustomError,
+  ReqUrlPreviewInfo,
+  ResBody,
+} from '@/type/api';
 import { checkReqMethod } from '@/utils/api/middlewares';
 
 import { HttpStatusEnum } from '../../enum/http';
-import { CustomError } from '../../type/api';
 import { formatUrl } from './../../utils/formatUrl';
 
 const prisma = new PrismaClient();
+
+const findOldShortUrl = async (targetUrl: string) => {
+  const oldShortUrl = await prisma.shortUrl.findFirst({
+    where: { targetUrl },
+    orderBy: { createdAt: 'desc' },
+  });
+  return oldShortUrl;
+};
+
+const createShortUrl = async (
+  requestPreview: ReqUrlPreviewInfo,
+  formateTargetUrl: string
+) => {
+  const id = ShortId.generate();
+  const shortUrlInfo = await prisma.shortUrl.create({
+    data: {
+      ...requestPreview,
+      targetUrl: formateTargetUrl,
+      id,
+    },
+  });
+  return shortUrlInfo;
+};
 
 export default async function handler(
   req: CreateShortUrlReq,
@@ -38,16 +65,16 @@ export default async function handler(
 
     const { targetUrl } = requestPreview;
     const formatTargetUrl = formatUrl(targetUrl);
-    // Create short url
-    const id = ShortId.generate();
-    await prisma.shortUrl.create({
-      data: {
-        ...requestPreview,
-        targetUrl: formatTargetUrl,
-        id,
-      },
-    });
-    body.data = { shortUrl: `${process.env.NEXT_PUBLIC_HOST}/${id}` };
+    // Check if the short URL already exists
+    const shortUrlInfo =
+      // If it exists, return the existing short URL
+      (await findOldShortUrl(formatTargetUrl)) ||
+      // If it does not exist, create a new short URL
+      (await createShortUrl(requestPreview, formatTargetUrl));
+
+    body.data = {
+      shortUrl: `${process.env.NEXT_PUBLIC_HOST}/${shortUrlInfo.id}`,
+    };
   } catch (error) {
     const { message, httpStatusCode } = error as CustomError;
     body = { message };
