@@ -19,17 +19,22 @@ function Form({ handleShortListUpdate }: FormProps) {
   const [isLoading, setIsLoading] = useState(false);
   // handle error status
   const [hasError, setHasError] = useState(false);
+  // handle url verifying
+  const [isVerifying, setIsVerifying] = useState(false);
   // verify url is valid
   const isValidUrl = async (url: string): Promise<boolean> => {
     if (!checkUrlIsValid(url, 'url')) return false;
 
     try {
       // Send a request to verify the URL's availability.
+      setIsVerifying(true);
       const targetUrl = formatUrl(url);
       await verifyUrl(targetUrl);
       return true;
     } catch (error) {
       return false;
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -154,9 +159,10 @@ function Form({ handleShortListUpdate }: FormProps) {
               />
             </div>
 
-            {targetUrlError && (
+            {targetUrlError && !isVerifying && (
               <p className={styles.hint}>Please enter a valid url.</p>
             )}
+            {isVerifying && <p className={styles.hint}>Verifying...</p>}
           </div>
         </div>
 
