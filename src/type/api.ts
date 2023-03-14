@@ -23,6 +23,7 @@ export type ReqUrlPreviewInfo = {
   description?: string;
   imageUrl?: string;
   visits?: number;
+  _csrf?: string;
 };
 
 // Information Required to Validation targetUrl

@@ -8,7 +8,11 @@ import {
   ReqUrlPreviewInfo,
   ResBody,
 } from '@/type/api';
-import { checkReqMethod } from '@/utils/api/middlewares';
+import {
+  checkCSRF,
+  checkReqMethod,
+  checkSecretKey,
+} from '@/utils/api/middlewares';
 
 import { HttpStatusEnum } from '../../enum/http';
 import { formatUrl } from './../../utils/formatUrl';
@@ -52,6 +56,16 @@ export default async function handler(
         HttpStatusEnum.MethodNotAllowed,
         'Method Now Allowed'
       );
+    }
+
+    // Verify csrf token
+    if (!checkCSRF(req.headers.cookie, req.body)) {
+      throw new CustomError(HttpStatusEnum.Forbidden, '403 Forbidden');
+    }
+
+    // verify secret key
+    if (!checkSecretKey(req.headers.cookie)) {
+      throw new CustomError(HttpStatusEnum.Forbidden, '403 Forbidden');
     }
 
     // Verify request data
