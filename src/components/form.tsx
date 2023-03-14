@@ -1,6 +1,6 @@
-import axios from 'axios';
 import React from 'react';
 
+import { createShortUrl, verifyUrl } from '@/api/apiHandle';
 import useInputValidate from '@/hooks/useInputValidate';
 import styles from '@/styles/Shortner.module.scss';
 import type { Field, RspShortUrl } from '@/type/api';
@@ -18,9 +18,8 @@ function Form({ handleShortListUpdate }: FormProps) {
 
     try {
       // Send a request to verify the URL's availability.
-      const apiurl = `${process.env.NEXT_PUBLIC_HOST}/api/url-validation`;
       const targetUrl = formatUrl(url);
-      await axios.post(apiurl, { targetUrl });
+      await verifyUrl(targetUrl);
       return true;
     } catch (error) {
       return false;
@@ -108,10 +107,9 @@ function Form({ handleShortListUpdate }: FormProps) {
     targetUrl: string | undefined | null;
   }) => {
     try {
-      const apiUrl = `${process.env.NEXT_PUBLIC_HOST}/api/short-url`;
-      const axiosResp = await axios
-        .post(apiUrl, props)
-        .then((res) => res.data as Field);
+      const axiosResp = await createShortUrl(props).then(
+        (res) => res.data as Field
+      );
       const { shortUrl } = axiosResp.data as RspShortUrl;
       return shortUrl;
     } catch (error) {

@@ -1,9 +1,9 @@
-import axios from 'axios';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import { ParsedUrlQuery } from 'querystring';
 import { useEffect, useState } from 'react';
 
+import { getShortUrl, updateVisits } from '@/api/apiHandle';
 import styles from '@/styles/Home.module.scss';
 import { Field, ReqUrlPreviewInfo } from '@/type/api';
 import { Cache } from '@/utils/cache';
@@ -23,9 +23,8 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 // Get shortUrlInfo from db
 const getShortUrlInfo = async (id: string) => {
-  const url = `${process.env.NEXT_PUBLIC_HOST}/api/short-url/${id}`;
   // Get targetUrl
-  const axiosResp = await axios.get(url).then((res) => res.data as Field);
+  const axiosResp = await getShortUrl(id).then((res) => res.data as Field);
 
   const shortUrlInfo = axiosResp.data as ReqUrlPreviewInfo;
   // Put the data into the cache.
@@ -77,13 +76,12 @@ export default function Home({
   };
 
   useEffect(() => {
-    const updateVisits = async () => {
-      const url = `${process.env.NEXT_PUBLIC_HOST}/api/short-url/${id}/visits`;
-      const newData = await axios.put(url).then((res) => res.data as Field);
+    const fetchData = async () => {
+      const newData = await updateVisits(id).then((res) => res.data as Field);
       const newVisits = (newData.data as ReqUrlPreviewInfo).visits;
       if (newVisits) setVisits(newVisits);
     };
-    updateVisits();
+    fetchData();
   }, [id]);
 
   return (
