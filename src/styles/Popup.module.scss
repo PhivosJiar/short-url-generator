@@ -1,0 +1,114 @@
+.mask {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+}
+
+.card {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 42.666vmin;
+    padding: 4vmin;
+    background: #1c1c1c;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    opacity: 1;
+    z-index: 1000;
+}
+
+.loader {
+    border: 6.4px solid #333;
+    border-top: 6.4px solid #e5613b;
+    border-radius: 50%;
+    width: 12.8vmin;
+    height: 12.8vmin;
+    animation: spin 1s linear infinite;
+    margin-bottom: 2.3988vh;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.text {
+    font-family: "Noto Sans TC";
+    font-style: normal;
+    font-weight: 400;
+    font-size: 3.84vmin;
+    line-height: 133%;
+    text-align: center;
+    color: #f3f3f3;
+}
+
+.title {
+    font-family: "Noto Sans TC";
+    font-style: normal;
+    font-weight: 700;
+    font-size: 5.12vmin;
+    line-height: 133%;
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 1.4393vh;
+}
+
+.content {
+    font-family: "Noto Sans TC";
+    font-style: normal;
+    font-weight: 400;
+    font-size: 3.2vmin;
+    line-height: 120%;
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 2.3988vh;
+    white-space: pre-line;
+}
+
+.btnContainer {
+    width: 100%;
+    height: 5vmin;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+
+    .confirmBtn {
+        width: 100%;
+        height: 100%;
+        background: #ff7a45;
+        border-radius: 6.4px;
+        border: 0;
+        font-family: "Urbanist";
+        font-style: normal;
+        font-weight: 700;
+        font-size: 2vmin;
+        line-height: 1.5;
+        color: #ffffff;
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+    }
+}
