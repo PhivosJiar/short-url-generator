@@ -52,7 +52,7 @@ export default async function handler(
       case 'GET': {
         // qurey short url info
         const shortUrlInfo = await getShortUrlInfo(id);
-        body.data = shortUrlInfo ?? {};
+        body.data = shortUrlInfo || null;
         break;
       }
       case 'PATCH': {
