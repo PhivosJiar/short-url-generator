@@ -7,7 +7,7 @@ export type ResBody = {
   message: string;
   data?: {
     [key: string]: unknown;
-  };
+  } | null;
 };
 
 // Define a type for flexible object extension
