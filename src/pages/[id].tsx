@@ -88,9 +88,11 @@ export default function Home({
       const newData = await updateVisits(id).then((res) => res.data as Field);
       const newVisits = (newData.data as ReqUrlPreviewInfo).visits;
       if (newVisits) setVisits(newVisits);
+      // redirect
+      if (targetUrl) location.replace(targetUrl);
     };
     fetchData();
-  }, [id]);
+  }, [id, targetUrl]);
 
   return (
     <>
