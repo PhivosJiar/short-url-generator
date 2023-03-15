@@ -12,7 +12,7 @@ interface Params extends ParsedUrlQuery {
   id: string;
 }
 
-const cache = new Cache(4);
+const cache = new Cache<ReqUrlPreviewInfo>(4);
 
 export const getStaticPaths: GetStaticPaths = () => {
   return {
