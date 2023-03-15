@@ -19,9 +19,10 @@ import { formatUrl } from './../../utils/formatUrl';
 
 const prisma = new PrismaClient();
 
-const findOldShortUrl = async (targetUrl: string) => {
+const findOldShortUrl = async (requestPreview: ReqUrlPreviewInfo) => {
+  const { targetUrl, title, description, imageUrl } = requestPreview;
   const oldShortUrl = await prisma.shortUrl.findFirst({
-    where: { targetUrl },
+    where: { targetUrl, title, description, imageUrl },
     orderBy: { createdAt: 'desc' },
   });
   return oldShortUrl;
@@ -82,7 +83,7 @@ export default async function handler(
     // Check if the short URL already exists
     const shortUrlInfo =
       // If it exists, return the existing short URL
-      (await findOldShortUrl(formatTargetUrl)) ||
+      (await findOldShortUrl(requestPreview)) ||
       // If it does not exist, create a new short URL
       (await createShortUrl(requestPreview, formatTargetUrl));
 
