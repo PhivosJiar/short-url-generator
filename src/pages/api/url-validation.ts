@@ -1,17 +1,14 @@
-import { PrismaClient } from '@prisma/client';
+import axios from 'axios';
 import type { NextApiResponse } from 'next';
-import * as ShortId from 'shortid';
 
-import type { CreateShortUrlReq, ResBody } from '@/type/api';
+import { CustomError, ResBody, urlValidationReq } from '@/type/api';
 import { checkReqMethod } from '@/utils/api/middlewares';
 
-import { HttpStatusEnum } from './../../../enum/http';
-import { CustomError } from './../../../type/api';
-
-const prisma = new PrismaClient();
+import { HttpStatusEnum } from '../../enum/http';
+import { formatUrl } from './../../utils/formatUrl';
 
 export default async function handler(
-  req: CreateShortUrlReq,
+  req: urlValidationReq,
   res: NextApiResponse<ResBody>
 ) {
   // Initialize response information
@@ -27,25 +24,19 @@ export default async function handler(
     }
 
     // Verify request data
-    const requestPreview = req.body;
-    if (!requestPreview?.targetUrl) {
+    const { targetUrl } = req.body;
+    if (!targetUrl) {
       throw new CustomError(
         HttpStatusEnum.BadReqest,
         `Invalid input: missing key 'targetUrl'`
       );
     }
 
-    const { targetUrl } = requestPreview;
-    // Create short url
-    const id = ShortId.generate();
-    await prisma.shortUrl.create({
-      data: {
-        ...requestPreview,
-        targetUrl,
-        id,
-      },
+    const apiUrl = formatUrl(targetUrl);
+    // Use HEAD method to validate the URL's availability.
+    await axios.head(apiUrl, {
+      timeout: 3000,
     });
-    body.data = { shortUrl: `${process.env.NEXT_PUBLIC_HOST}/${id}` };
   } catch (error) {
     const { message, httpStatusCode } = error as CustomError;
     body = { message };

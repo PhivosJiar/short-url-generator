@@ -1,27 +1,49 @@
-import axios from 'axios';
-import React from 'react';
+import React, { useState } from 'react';
 
+import { createShortUrl, verifyUrl } from '@/api/apiHandle';
 import useInputValidate from '@/hooks/useInputValidate';
 import styles from '@/styles/Shortner.module.scss';
 import type { Field, RspShortUrl } from '@/type/api';
 import { checkUrlIsValid } from '@/utils/checkIsValid';
+import { formatUrl } from '@/utils/formatUrl';
+
+import ErrorPopup from './popup/errorPopup';
+import LoadingPopup from './popup/loadingPopup';
 
 interface FormProps {
   handleShortListUpdate: (newShortUrl: string) => void;
 }
 
-// verify url is valid
-const isValidUrl = (value: string) => {
-  return checkUrlIsValid(value, 'url');
-};
-
-// verify imgUrl is valid
-const isValidImg = (value: string) => {
-  // Since it is an optional item, a value must be present for it to be checked.
-  return !value.trim() || checkUrlIsValid(value, 'img');
-};
-
 function Form({ handleShortListUpdate }: FormProps) {
+  // hdndle loading status
+  const [isLoading, setIsLoading] = useState(false);
+  // handle error status
+  const [hasError, setHasError] = useState(false);
+  // handle url verifying
+  const [isVerifying, setIsVerifying] = useState(false);
+  // verify url is valid
+  const isValidUrl = async (url: string): Promise<boolean> => {
+    if (!checkUrlIsValid(url, 'url')) return false;
+
+    try {
+      // Send a request to verify the URL's availability.
+      setIsVerifying(true);
+      const targetUrl = formatUrl(url);
+      await verifyUrl(targetUrl);
+      return true;
+    } catch (error) {
+      return false;
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  // verify imgUrl is valid
+  const isValidImg = (value: string): boolean => {
+    // Since it is an optional item, a value must be present for it to be checked.
+    return !value.trim() || checkUrlIsValid(value, 'img');
+  };
+
   // title
   const {
     value: title,
@@ -63,6 +85,7 @@ function Form({ handleShortListUpdate }: FormProps) {
   // handleFormSubmit
   const onFormSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
+    setIsLoading(true);
 
     if (!targetUrlIsValid) {
       return;
@@ -85,7 +108,10 @@ function Form({ handleShortListUpdate }: FormProps) {
       resetImageUrl();
       resetTargetUrl();
     } catch (error) {
+      setHasError(true);
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -97,14 +123,19 @@ function Form({ handleShortListUpdate }: FormProps) {
     targetUrl: string | undefined | null;
   }) => {
     try {
-      const axiosResp = await axios
-        .post(`/api/post/short-url`, props)
-        .then((res) => res.data as Field);
+      const axiosResp = await createShortUrl(props).then(
+        (res) => res.data as Field
+      );
       const { shortUrl } = axiosResp.data as RspShortUrl;
       return shortUrl;
     } catch (error) {
       throw new Error(`${(error as Error).message}`);
     }
+  };
+
+  // handle popup confirm btn click
+  const handleErrorPopupClose = () => {
+    setHasError(false);
   };
 
   // handle input error class
@@ -128,9 +159,10 @@ function Form({ handleShortListUpdate }: FormProps) {
               />
             </div>
 
-            {targetUrlError && (
+            {targetUrlError && !isVerifying && (
               <p className={styles.hint}>Please enter a valid url.</p>
             )}
+            {isVerifying && <p className={styles.hint}>Verifying...</p>}
           </div>
         </div>
 
@@ -186,6 +218,16 @@ function Form({ handleShortListUpdate }: FormProps) {
           Submit
         </button>
       </form>
+      {/* loading popup */}
+      {isLoading && <LoadingPopup />}
+      {/* error popup */}
+      {hasError && (
+        <ErrorPopup
+          title="Error"
+          content="Please check your network and try again."
+          onConfirmClick={handleErrorPopupClose}
+        />
+      )}
     </>
   );
 }

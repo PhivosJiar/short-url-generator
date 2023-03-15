@@ -1,8 +1,9 @@
-import axios from 'axios';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import { ParsedUrlQuery } from 'querystring';
+import { useEffect, useState } from 'react';
 
+import { getShortUrl, updateVisits } from '@/api/apiHandle';
 import styles from '@/styles/Home.module.scss';
 import { Field, ReqUrlPreviewInfo } from '@/type/api';
 import { Cache } from '@/utils/cache';
@@ -11,7 +12,7 @@ interface Params extends ParsedUrlQuery {
   id: string;
 }
 
-const cache = new Cache(4);
+const cache = new Cache<ReqUrlPreviewInfo>(4);
 
 export const getStaticPaths: GetStaticPaths = () => {
   return {
@@ -23,9 +24,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 // Get shortUrlInfo from db
 const getShortUrlInfo = async (id: string) => {
   // Get targetUrl
-  const axiosResp = await axios
-    .get(`${process.env.NEXT_PUBLIC_HOST}/api/get/short-url-info/${id}`)
-    .then((res) => res.data as Field);
+  const axiosResp = await getShortUrl(id).then((res) => res.data as Field);
 
   const shortUrlInfo = axiosResp.data as ReqUrlPreviewInfo;
   // Put the data into the cache.
@@ -33,60 +32,65 @@ const getShortUrlInfo = async (id: string) => {
   return shortUrlInfo;
 };
 
-// Updating visits from short url info
-const updateVisits = (id: string, visits: number) => {
-  axios.patch(
-    `${process.env.NEXT_PUBLIC_HOST}/api/patch/short-url-info/${id}`,
-    { visits }
-  );
-};
-
 // Handle pre-rendering
 export const getStaticProps: GetStaticProps<any> = async (context) => {
-  const { id } = context.params as Params;
+  const id = context.params && (context.params as Params).id;
 
-  const cacheValue = cache.get(id) as ReqUrlPreviewInfo;
+  // Handle id not exist
+  if (!id) {
+    return {
+      notFound: true,
+    };
+  }
+
+  const cacheValue = cache.get(id);
   // If the target data is not in the cache, query the database.
   const shortUrlInfo = cacheValue || (await getShortUrlInfo(id));
 
-  // Handle id not exist
+  // Handle short url not exist
   if (!shortUrlInfo) {
     return {
       notFound: true,
     };
   }
 
-  const { title, description, imageUrl, targetUrl, visits } = shortUrlInfo;
-
-  const newVisit = (visits ?? 0) + 1;
-  shortUrlInfo.visits = newVisit;
-  // Updating visits
-  updateVisits(shortUrlInfo.id, newVisit);
+  const { title, description, imageUrl, targetUrl } = shortUrlInfo;
 
   // Render pre-render page
   return {
     props: {
+      id,
       title,
       description,
       imageUrl,
       targetUrl,
-      visits: newVisit,
     },
     revalidate: 1,
   };
 };
 
 export default function Home({
+  id,
   title,
   description,
   imageUrl,
   targetUrl,
-  visits,
 }: ReqUrlPreviewInfo) {
+  const [visits, setVisits] = useState(0);
   // go to targetUrl
   const handleClick = () => {
-    location.replace(targetUrl as string);
+    if (!targetUrl) return;
+    location.replace(targetUrl);
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const newData = await updateVisits(id).then((res) => res.data as Field);
+      const newVisits = (newData.data as ReqUrlPreviewInfo).visits;
+      if (newVisits) setVisits(newVisits);
+    };
+    fetchData();
+  }, [id]);
 
   return (
     <>
@@ -109,7 +113,7 @@ export default function Home({
           &gt;
         </button>
 
-        <span className={styles.visits}>visits: {visits}</span>
+        <span className={styles.visits}>visits: {visits || `fetching...`}</span>
       </div>
     </>
   );
