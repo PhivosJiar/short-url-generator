@@ -34,13 +34,20 @@ const getShortUrlInfo = async (id: string) => {
 
 // Handle pre-rendering
 export const getStaticProps: GetStaticProps<any> = async (context) => {
-  const { id } = context.params as Params;
+  const id = context.params && (context.params as Params).id;
 
-  const cacheValue = cache.get(id) as ReqUrlPreviewInfo;
+  // Handle id not exist
+  if (!id) {
+    return {
+      notFound: true,
+    };
+  }
+
+  const cacheValue = cache.get(id);
   // If the target data is not in the cache, query the database.
   const shortUrlInfo = cacheValue || (await getShortUrlInfo(id));
 
-  // Handle id not exist
+  // Handle short url not exist
   if (!shortUrlInfo) {
     return {
       notFound: true,
@@ -72,7 +79,8 @@ export default function Home({
   const [visits, setVisits] = useState(0);
   // go to targetUrl
   const handleClick = () => {
-    location.replace(targetUrl as string);
+    if (!targetUrl) return;
+    location.replace(targetUrl);
   };
 
   useEffect(() => {

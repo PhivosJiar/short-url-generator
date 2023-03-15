@@ -4,7 +4,6 @@ interface NodeStructure {
   key: string;
   value: ReqUrlPreviewInfo;
   lastAccessTime: number;
-  [key: string]: any;
 }
 
 export class Node implements NodeStructure {
@@ -20,9 +19,9 @@ export class Node implements NodeStructure {
 }
 
 export class Cache {
-  keyList: string[];
-  hashMap: NodeStructure | undefined;
-  capacity: number;
+  private keyList: string[];
+  private hashMap: { [key: string]: NodeStructure } = {};
+  private capacity: number;
   constructor(capacity = 0) {
     this.keyList = [];
     this.capacity = capacity;
@@ -43,7 +42,7 @@ export class Cache {
   get(key: string) {
     try {
       if (!this.hashMap) throw new Error(`hashMap is empty`);
-      const node = this.hashMap[key] as NodeStructure;
+      const node = this.hashMap[key];
       node.lastAccessTime = this.now();
       return node.value;
     } catch (error) {
@@ -64,16 +63,13 @@ export class Cache {
     }
     const newNode = new Node(key, value, this.now());
 
-    this.hashMap
-      ? (this.hashMap[newNode.key] = newNode)
-      : (this.hashMap = newNode);
-    // this.hashMap[newNode.key] = newNode;
+    this.hashMap[newNode.key] = newNode;
     this.keyList.push(newNode.key);
   }
 
   update(key: string, value: ReqUrlPreviewInfo) {
     if (!this.hashMap) return;
-    const node = this.hashMap[key] as Node;
+    const node = this.hashMap[key];
     node.value = value;
   }
 
@@ -84,7 +80,9 @@ export class Cache {
     if (!this.hashMap) return;
     this.sortKeyListByScore();
 
-    const droppedKey = this.keyList.pop() as string;
+    const droppedKey = this.keyList.pop();
+
+    if (!droppedKey) return;
     delete this.hashMap[droppedKey];
   }
 
@@ -94,9 +92,7 @@ export class Cache {
   sortKeyListByScore() {
     if (this.hashMap) return;
     this.keyList.sort(
-      (a, b) =>
-        (this.hashMap?.[b] as NodeStructure).lastAccessTime -
-        (this.hashMap?.[a] as NodeStructure).lastAccessTime
+      (a, b) => this.hashMap[b].lastAccessTime - this.hashMap[a].lastAccessTime
     );
   }
 }

@@ -7,12 +7,12 @@ import { checkCSRF, checkSecretKey } from '@/utils/api/middlewares';
 
 const prisma = new PrismaClient();
 
-const getShortUrlInfo = async (id: string): Promise<Field> => {
+const getShortUrlInfo = async (id: string): Promise<Field | null> => {
   const shortUrlInfo = await prisma.shortUrl.findUnique({
     where: { id },
   });
 
-  return shortUrlInfo as Field;
+  return shortUrlInfo;
 };
 
 const updateShortUrlInfo = async (
@@ -24,7 +24,7 @@ const updateShortUrlInfo = async (
     data,
   });
 
-  return updatedShortUrlInfo as Field;
+  return updatedShortUrlInfo;
 };
 
 export default async function handler(
@@ -44,11 +44,15 @@ export default async function handler(
       );
     }
 
+    if (typeof id !== 'string') {
+      throw new CustomError(HttpStatusEnum.BadReqest, `Invalid id`);
+    }
+
     switch (req.method) {
       case 'GET': {
         // qurey short url info
-        const shortUrlInfo = await getShortUrlInfo(id as string);
-        body.data = shortUrlInfo;
+        const shortUrlInfo = await getShortUrlInfo(id);
+        body.data = shortUrlInfo ?? {};
         break;
       }
       case 'PATCH': {
@@ -64,10 +68,7 @@ export default async function handler(
 
         // updating visits from short url info
         const data = req.body as ReqUrlPreviewInfo;
-        const updatedShortUrlInfo = await updateShortUrlInfo(
-          id as string,
-          data
-        );
+        const updatedShortUrlInfo = await updateShortUrlInfo(id, data);
         body.data = updatedShortUrlInfo;
         break;
       }
