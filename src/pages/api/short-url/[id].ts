@@ -35,6 +35,7 @@ export default async function handler(
   let body: ResBody = { message: 'ok' };
   let status: number = HttpStatusEnum.OK;
   try {
+    console.log('test');
     const { id } = req.query;
 
     if (!id) {
